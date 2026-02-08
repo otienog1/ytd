@@ -1,65 +1,192 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { URLInput } from '@/components/URLInput';
+import { VideoPreview } from '@/components/VideoPreview';
+import { DownloadButton } from '@/components/DownloadButton';
+import { ProgressIndicator } from '@/components/ProgressIndicator';
+import { useToast } from '@/components/ui/use-toast';
+import api from '@/lib/api';
+import type { DownloadResponse, DownloadStatus } from '@/lib/types';
 
 export default function Home() {
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [isProcessingStarted, setIsProcessingStarted] = useState(false);
+  const [submittedUrl, setSubmittedUrl] = useState<string>('');
+  const { toast } = useToast();
+
+  const downloadMutation = useMutation({
+    mutationFn: (url: string) => api.initiateDownload({ url }),
+    onSuccess: (data: DownloadResponse) => {
+      setJobId(data.jobId);
+      setIsProcessingStarted(true);
+      toast({
+        title: 'Video processing started',
+        description: 'Your video is being processed...',
+      });
+    },
+    onError: (error: any) => {
+      setIsProcessingStarted(false);
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.error || 'Failed to process video',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const { data: status, isLoading: isPolling } = useQuery({
+    queryKey: ['download-status', jobId],
+    queryFn: () => api.getDownloadStatus(jobId!),
+    enabled: !!jobId,
+    refetchInterval: (query) => {
+      const data = query.state.data as DownloadStatus | undefined;
+      if (data?.status === 'completed' || data?.status === 'failed') {
+        setIsProcessingStarted(false);
+        return false;
+      }
+      return 500; // Poll every 500ms for smooth real-time progress
+    },
+  });
+
+  const handleSubmit = (url: string) => {
+    setJobId(null);
+    setIsProcessingStarted(false);
+    setSubmittedUrl(url);
+    downloadMutation.mutate(url);
+  };
+
+  const handleUrlChange = (currentUrl: string) => {
+    // Only reset if the URL is different from the one we're currently processing
+    if (currentUrl !== submittedUrl) {
+      setJobId(null);
+      setIsProcessingStarted(false);
+    }
+  };
+
+  // Determine if we're in an active processing state
+  // Keep showing processing until status is completed or failed
+  const isActivelyProcessing = downloadMutation.isPending || isProcessingStarted;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen bg-[var(--background)]">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] tracking-tight">
+              Download YouTube Shorts
+            </h1>
+            <p className="text-base text-[var(--text-muted)] max-w-2xl mx-auto">
+              Download any YouTube Shorts video in MP4 format with the highest quality
+            </p>
+          </div>
+
+          {/* Main Download Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:items-stretch">
+            {/* Left Column - Input & How to Use (2/3 width) */}
+            <div className="md:col-span-2 flex flex-col">
+              <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-8 flex-1">
+                <URLInput onSubmit={handleSubmit} isLoading={isActivelyProcessing} status={status} onUrlChange={handleUrlChange} />
+
+                {/* How to Use Section */}
+                <div className="space-y-6 pt-4">
+                  <h2 className="text-2xl font-bold text-[var(--foreground)]">How It Works</h2>
+                  <div className="grid gap-6 md:grid-cols-3">
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 bg-[#E74C3C] flex items-center justify-center text-white text-xl font-bold">
+                        1
+                      </div>
+                      <h3 className="text-lg font-semibold text-[var(--foreground)]">Copy URL</h3>
+                      <p className="text-[var(--text-muted)] text-sm">
+                        Copy the YouTube Shorts video URL from your browser
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 bg-[#E74C3C] flex items-center justify-center text-white text-xl font-bold">
+                        2
+                      </div>
+                      <h3 className="text-lg font-semibold text-[var(--foreground)]">Paste & Process</h3>
+                      <p className="text-[var(--text-muted)] text-sm">
+                        Paste the URL above and click the download button
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 bg-[#E74C3C] flex items-center justify-center text-white text-xl font-bold">
+                        3
+                      </div>
+                      <h3 className="text-lg font-semibold text-[var(--foreground)]">Save Video</h3>
+                      <p className="text-[var(--text-muted)] text-sm">
+                        Save the MP4 file to your device
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Video Preview & Download (1/3 width) */}
+            <div className="md:col-span-1 flex flex-col">
+              {isActivelyProcessing && !status?.videoInfo && (
+                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] flex-1">
+                  <div className="space-y-4 animate-pulse">
+                    <div className="border-2 border-[var(--card-border)] p-5 space-y-4 bg-[var(--background)]">
+                      <div className="aspect-video relative overflow-hidden bg-[var(--skeleton-bg)]"></div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-[var(--skeleton-bg)] rounded w-3/4"></div>
+                        <div className="flex gap-4">
+                          <div className="h-3 bg-[var(--skeleton-bg)] rounded w-16"></div>
+                          <div className="h-3 bg-[var(--skeleton-bg)] rounded w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="h-14 bg-[var(--skeleton-bg)] rounded w-full"></div>
+                  </div>
+                </div>
+              )}
+              {status?.videoInfo && status.status !== 'failed' && (
+                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] flex-1">
+                  <VideoPreview
+                    videoInfo={status.videoInfo}
+                    downloadUrl={status.downloadUrl}
+                    showDownloadButton={status.status === 'completed'}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Ad Banner */}
+          <div className="flex justify-center py-2">
+            <ins
+              className="adsbygoogle"
+              style={{ display: 'block' }}
+              data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+              data-ad-slot="XXXXXXXXXX"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center text-sm text-gray-500 space-y-3 pt-8">
+            <p>
+              By using this service, you agree to our{' '}
+              <a href="/terms-of-use" className="text-[#E74C3C] hover:text-[#c0392b] underline transition-colors">
+                Terms of Use
+              </a>{' '}
+              and{' '}
+              <a href="/privacy-policy" className="text-[#E74C3C] hover:text-[#c0392b] underline transition-colors">
+                Privacy Policy
+              </a>
+            </p>
+            <p>
+              This tool is for personal use only. Respect copyright laws and YouTube&apos;s Terms of Service.
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
