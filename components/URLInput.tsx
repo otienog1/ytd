@@ -48,7 +48,7 @@ export function URLInput({ onSubmit, isLoading, status, onUrlChange }: URLInputP
 
   // isLoading already includes both mutation pending and status processing states
   const isProcessing = isLoading;
-  const isCompleted = status && status.status === 'completed';
+  const isCompleted = status?.status === 'completed';
   const progress = getProgressValue();
 
   return (
