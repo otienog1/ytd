@@ -15,31 +15,47 @@ export interface YouTubeCookies {
  * Extract YouTube cookies from browser
  *
  * Note: This uses the document.cookie API which only has access to
- * cookies that are not HttpOnly. For full cookie access, you'd need
- * a browser extension.
+ * cookies that are not HttpOnly. Most YouTube auth cookies ARE HttpOnly,
+ * so this may return limited cookies.
+ *
+ * For better results, we try to get cookies from localStorage/sessionStorage
+ * or the user can manually provide them.
  */
 export function extractYouTubeCookies(): YouTubeCookies {
   const cookies: YouTubeCookies = {};
 
-  // Get all cookies from document.cookie
+  // Get all cookies from document.cookie (non-HttpOnly only)
   const cookieString = document.cookie;
 
-  if (!cookieString) {
-    console.warn('No cookies found in document.cookie');
-    return cookies;
-  }
+  if (cookieString) {
+    // Parse cookies
+    const cookiePairs = cookieString.split(';');
 
-  // Parse cookies
-  const cookiePairs = cookieString.split(';');
-
-  for (const pair of cookiePairs) {
-    const [name, value] = pair.trim().split('=');
-    if (name && value) {
-      cookies[name] = value;
+    for (const pair of cookiePairs) {
+      const [name, value] = pair.trim().split('=');
+      if (name && value) {
+        cookies[name] = decodeURIComponent(value);
+      }
     }
   }
 
-  console.log(`Extracted ${Object.keys(cookies).length} cookies from browser`);
+  // Try to extract additional auth info from localStorage
+  try {
+    // YouTube sometimes stores auth tokens in localStorage
+    const ytConfig = localStorage.getItem('yt-remote-session-name');
+    if (ytConfig) {
+      cookies['yt-remote-session-name'] = ytConfig;
+    }
+  } catch (e) {
+    // localStorage might not be accessible
+  }
+
+  if (Object.keys(cookies).length === 0) {
+    console.warn('No cookies found - YouTube auth cookies are likely HttpOnly');
+  } else {
+    console.log(`Extracted ${Object.keys(cookies).length} cookies from browser`);
+  }
+
   return cookies;
 }
 
