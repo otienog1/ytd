@@ -7,6 +7,8 @@ import { VideoPreview } from '@/components/VideoPreview';
 import { DownloadButton } from '@/components/DownloadButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { useToast } from '@/components/ui/use-toast';
+import YouTubeLoginPrompt from '@/components/YouTubeLoginPrompt';
+import { extractYouTubeCookies } from '@/utils/cookieExtractor';
 import api from '@/lib/api';
 import type { DownloadResponse, DownloadStatus } from '@/lib/types';
 
@@ -17,7 +19,13 @@ export default function Home() {
   const { toast } = useToast();
 
   const downloadMutation = useMutation({
-    mutationFn: (url: string) => api.initiateDownload({ url }),
+    mutationFn: (url: string) => {
+      // Extract YouTube cookies from browser and send with request
+      const cookies = extractYouTubeCookies();
+      console.log(`Initiating download with ${Object.keys(cookies).length} cookies`);
+
+      return api.initiateDownload({ url, cookies });
+    },
     onSuccess: (data: DownloadResponse) => {
       setJobId(data.jobId);
       setIsProcessingStarted(true);
@@ -88,6 +96,9 @@ export default function Home() {
             {/* Left Column - Input & How to Use (2/3 width) */}
             <div className="md:col-span-2 flex flex-col">
               <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-8 flex-1">
+                {/* YouTube Login Prompt */}
+                <YouTubeLoginPrompt />
+
                 <URLInput onSubmit={handleSubmit} isLoading={isActivelyProcessing} status={status} onUrlChange={handleUrlChange} />
 
                 {/* How to Use Section */}
