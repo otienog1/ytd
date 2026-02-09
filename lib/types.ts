@@ -9,6 +9,7 @@ export interface VideoInfo {
 
 export interface DownloadRequest {
   url: string;
+  cookies?: { [key: string]: string };  // Optional YouTube cookies from browser
 }
 
 export interface DownloadResponse {
