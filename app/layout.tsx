@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import { StructuredData } from "@/components/StructuredData";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 const overpassMono = Overpass_Mono({
   variable: "--font-overpass-mono",
@@ -106,6 +107,7 @@ export default function RootLayout({
         className={`${overpassMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
         <StructuredData />
         <Providers>
           <Header />
