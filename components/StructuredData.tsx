@@ -23,7 +23,7 @@ export function StructuredData() {
     offers: {
       '@type': 'Offer',
       price: '0',
-      priceCurrency': 'USD'
+      priceCurrency: 'USD'
     },
     operatingSystem: 'Web Browser',
     description: 'Free online YouTube Shorts downloader. Download Shorts videos in HD quality without watermark.',
@@ -32,7 +32,7 @@ export function StructuredData() {
       ratingValue: '4.8',
       ratingCount: '1250',
       bestRating: '5',
-      worstRating': '1'
+      worstRating: '1'
     }
   }
 
