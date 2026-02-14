@@ -81,11 +81,9 @@ export const metadata: Metadata = {
     },
   },
 
-  // TODO: Add these after verifying with Google/Bing
-  // verification: {
-  //   google: 'your-google-verification-code',
-  //   bing: 'your-bing-verification-code',
-  // },
+  verification: {
+    google: 'LjIMRPPR4UEMDN53YlrgUBVW0qNZBqXU3SeB5UUQTpM',
+  },
 };
 
 export default function RootLayout({
