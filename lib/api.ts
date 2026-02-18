@@ -3,6 +3,8 @@ import type {
   DownloadRequest,
   DownloadResponse,
   DownloadStatus,
+  HistoryResponse,
+  HistoryFilters,
 } from "./types";
 
 const API_BASE_URL =
@@ -32,8 +34,23 @@ export const api = {
     return response.data;
   },
 
-  async getDownloadHistory(): Promise<DownloadStatus[]> {
-    const response = await apiClient.get<DownloadStatus[]>("/api/history");
+  async getDownloadHistory(filters?: HistoryFilters): Promise<HistoryResponse> {
+    const params = new URLSearchParams();
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
+
+    const response = await apiClient.get<HistoryResponse>(
+      `/api/history?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async deleteDownload(jobId: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.delete<{ success: boolean; message: string }>(
+      `/api/history/${jobId}`
+    );
     return response.data;
   },
 };

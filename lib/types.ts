@@ -27,4 +27,24 @@ export interface DownloadStatus {
   videoInfo?: VideoInfo;
   downloadUrl?: string;
   error?: string;
+  createdAt?: string;
+  storageProvider?: 'gcs' | 'azure' | 's3';
+  fileSize?: number;
+}
+
+export interface HistoryResponse {
+  items: DownloadStatus[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface HistoryFilters {
+  page?: number;
+  limit?: number;
+  status?: 'queued' | 'processing' | 'completed' | 'failed' | '';
+  search?: string;
 }
