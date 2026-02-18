@@ -9,6 +9,8 @@ import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { useToast } from '@/components/ui/use-toast';
 import YouTubeLoginPrompt from '@/components/YouTubeLoginPrompt';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { StorageAlert } from '@/components/StorageAlert';
+import { StorageStats } from '@/components/StorageStats';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { extractYouTubeCookies } from '@/utils/cookieExtractor';
 import api from '@/lib/api';
@@ -95,9 +97,12 @@ export default function Home() {
             )}
           </div>
 
+          {/* Storage Alert */}
+          <StorageAlert />
+
           {/* Main Download Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:items-stretch">
-            {/* Left Column - Input & How to Use (2/3 width) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left & Center Columns - Input & How to Use (2/3 width) */}
             <div className="md:col-span-2 flex flex-col">
               <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-8 flex-1">
                 {/* YouTube Login Prompt */}
@@ -141,8 +146,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column - Video Preview & Download (1/3 width) */}
-            <div className="md:col-span-1 flex flex-col">
+            {/* Right Column - Video Preview, Download & Storage Stats (1/3 width) */}
+            <div className="lg:col-span-1 flex flex-col gap-6">
               {isActivelyProcessing && !status?.videoInfo && (
                 <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] flex-1">
                   <div className="space-y-4 animate-pulse">
@@ -169,6 +174,9 @@ export default function Home() {
                   />
                 </div>
               )}
+
+              {/* Storage Stats - Always show */}
+              <StorageStats />
             </div>
           </div>
 

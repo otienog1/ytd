@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { StorageIndicator } from './StorageIndicator';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -37,6 +38,11 @@ export function Navigation() {
                 </Link>
               ))}
             </div>
+          </div>
+
+          {/* Right side - storage indicator */}
+          <div>
+            <StorageIndicator compact />
           </div>
         </div>
       </div>
