@@ -1,22 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { URLInput } from '@/components/URLInput';
 import { VideoPreview } from '@/components/VideoPreview';
 import { DownloadButton } from '@/components/DownloadButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { useToast } from '@/components/ui/use-toast';
 import YouTubeLoginPrompt from '@/components/YouTubeLoginPrompt';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { extractYouTubeCookies } from '@/utils/cookieExtractor';
 import api from '@/lib/api';
-import type { DownloadResponse, DownloadStatus } from '@/lib/types';
+import type { DownloadResponse } from '@/lib/types';
 
 export default function Home() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [isProcessingStarted, setIsProcessingStarted] = useState(false);
   const [submittedUrl, setSubmittedUrl] = useState<string>('');
   const { toast } = useToast();
+
+  // Use WebSocket for real-time updates instead of polling
+  const { status, isConnected, error: wsError } = useWebSocket(jobId || '');
 
   const downloadMutation = useMutation({
     mutationFn: (url: string) => {
@@ -31,7 +36,7 @@ export default function Home() {
       setIsProcessingStarted(true);
       toast({
         title: 'Video processing started',
-        description: 'Your video is being processed...',
+        description: 'Your video is being processed via real-time connection...',
       });
     },
     onError: (error: any) => {
@@ -44,19 +49,12 @@ export default function Home() {
     },
   });
 
-  const { data: status, isLoading: isPolling } = useQuery({
-    queryKey: ['download-status', jobId],
-    queryFn: () => api.getDownloadStatus(jobId!),
-    enabled: !!jobId,
-    refetchInterval: (query) => {
-      const data = query.state.data as DownloadStatus | undefined;
-      if (data?.status === 'completed' || data?.status === 'failed') {
-        setIsProcessingStarted(false);
-        return false;
-      }
-      return 500; // Poll every 500ms for smooth real-time progress
-    },
-  });
+  // Stop processing indicator when job is complete or failed
+  if (status && (status.status === 'completed' || status.status === 'failed')) {
+    if (isProcessingStarted) {
+      setIsProcessingStarted(false);
+    }
+  }
 
   const handleSubmit = (url: string) => {
     setJobId(null);
@@ -89,6 +87,12 @@ export default function Home() {
             <p className="text-base text-[var(--text-muted)] max-w-2xl mx-auto">
               Free online YouTube Shorts downloader to save Shorts videos in MP4 format. Download YouTube Shorts in HD quality without watermark. Fast, secure, and works on all devices - no registration required.
             </p>
+            {/* Connection Status - Only show when actively processing */}
+            {jobId && isProcessingStarted && (
+              <div className="flex justify-center pt-2">
+                <ConnectionStatus isConnected={isConnected} error={wsError} />
+              </div>
+            )}
           </div>
 
           {/* Main Download Section */}
