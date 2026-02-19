@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
+import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import { StructuredData } from "@/components/StructuredData";
@@ -111,6 +112,7 @@ export default function RootLayout({
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
         <StructuredData />
         <Providers>
+          <Navbar />
           <Header />
           <Navigation />
           {children}

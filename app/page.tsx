@@ -10,7 +10,6 @@ import { useToast } from '@/components/ui/use-toast';
 import YouTubeLoginPrompt from '@/components/YouTubeLoginPrompt';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { StorageAlert } from '@/components/StorageAlert';
-import { StorageStats } from '@/components/StorageStats';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { extractYouTubeCookies } from '@/utils/cookieExtractor';
 import api from '@/lib/api';
@@ -176,9 +175,6 @@ export default function Home() {
                   />
                 </div>
               )}
-
-              {/* Storage Stats - Always show */}
-              <StorageStats />
             </div>
           </div>
 
