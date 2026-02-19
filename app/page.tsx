@@ -67,9 +67,11 @@ export default function Home() {
 
   const handleUrlChange = (currentUrl: string) => {
     // Only reset if the URL is different from the one we're currently processing
-    if (currentUrl !== submittedUrl) {
+    // This allows the user to start a new download
+    if (currentUrl && currentUrl !== submittedUrl) {
       setJobId(null);
       setIsProcessingStarted(false);
+      setSubmittedUrl(''); // Clear submitted URL to allow new submission
     }
   };
 
