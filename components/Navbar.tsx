@@ -91,19 +91,21 @@ export function Navbar() {
                   <Link href="/terms-of-use" className="text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium">
                     Terms
                   </Link>
-                  <button
-                    onClick={toggleTheme}
-                    className="p-2 rounded-md hover:bg-[var(--border-color)] transition-colors"
-                    aria-label="Toggle theme"
-                  >
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5 text-[var(--text-muted)]" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-[var(--text-muted)]" />
-                    )}
-                  </button>
                 </div>
               )}
+
+              {/* Theme Toggle - Available for all users */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-md hover:bg-[var(--border-color)] transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <Moon className="w-5 h-5 text-[var(--text-muted)]" />
+                ) : (
+                  <Sun className="w-5 h-5 text-[var(--text-muted)]" />
+                )}
+              </button>
 
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin text-[var(--text-muted)]" />
