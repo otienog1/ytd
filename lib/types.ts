@@ -10,6 +10,7 @@ export interface VideoInfo {
 export interface DownloadRequest {
   url: string;
   cookies?: { [key: string]: string };  // Optional YouTube cookies from browser
+  user_id?: string;  // Optional Firebase user ID for authenticated users
 }
 
 export interface DownloadResponse {
