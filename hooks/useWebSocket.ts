@@ -35,6 +35,15 @@ export function useWebSocket(jobId: string): UseWebSocketReturn {
   const reconnectAttempts = useRef(0);
   const pingIntervalRef = useRef<NodeJS.Timeout>();
 
+  // Clear status when jobId changes or becomes empty
+  useEffect(() => {
+    if (!jobId) {
+      setStatus(null);
+      setIsConnected(false);
+      setError(null);
+    }
+  }, [jobId]);
+
   const connect = useCallback(() => {
     if (!jobId) return;
 
