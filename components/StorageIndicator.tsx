@@ -75,7 +75,7 @@ export function StorageIndicator({ compact = false }: StorageIndicatorProps) {
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="bg-[var(--card-bg)] shadow-2xl p-4 border border-[var(--card-border)] hover:shadow-xl transition-shadow w-full text-left"
+        className="bg-[var(--card-bg)] p-4 border border-[var(--card-border)] w-full text-left"
       >
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-[var(--foreground)]">Total Storage</span>

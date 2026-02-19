@@ -10,17 +10,6 @@ export default function StatsPage() {
       <div className="min-h-screen bg-[var(--background)]">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           <div className="space-y-8">
-            {/* Page Header */}
-            <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] tracking-tight">
-                Storage Statistics
-              </h1>
-              <p className="text-base text-[var(--text-muted)] max-w-2xl">
-                Monitor cloud storage usage across Google Cloud Storage, Azure Blob Storage, and AWS S3.
-                Track file counts, storage capacity, and usage percentages in real-time.
-              </p>
-            </div>
-
             {/* Storage Alert */}
             <StorageAlert />
 
@@ -28,7 +17,7 @@ export default function StatsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Stats */}
               <div className="lg:col-span-2">
-                <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-6">
+                <div className="bg-[var(--card-bg)] p-8 border border-[var(--card-border)] space-y-6">
                   <h2 className="text-2xl font-bold text-[var(--foreground)]">
                     Cloud Storage Overview
                   </h2>
@@ -60,7 +49,7 @@ export default function StatsPage() {
 
               {/* Sidebar Info */}
               <div className="lg:col-span-1 flex flex-col gap-6">
-                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)]">
+                <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)]">
                   <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                     Quick Info
                   </h3>
@@ -80,7 +69,7 @@ export default function StatsPage() {
                   </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)]">
+                <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)]">
                   <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                     Storage Providers
                   </h3>

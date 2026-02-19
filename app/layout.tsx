@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Overpass_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Navigation } from "@/components/Navigation";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
@@ -113,8 +111,6 @@ export default function RootLayout({
         <StructuredData />
         <Providers>
           <Navbar />
-          <Header />
-          <Navigation />
           {children}
           <Toaster />
         </Providers>

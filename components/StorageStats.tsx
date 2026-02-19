@@ -89,7 +89,7 @@ export function StorageStats() {
 
   if (loading) {
     return (
-      <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)]">
+      <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)]">
         <div className="animate-pulse">
           <div className="h-4 bg-[var(--skeleton-bg)] rounded w-1/4 mb-4"></div>
           <div className="space-y-3">
@@ -104,7 +104,7 @@ export function StorageStats() {
 
   if (error) {
     return (
-      <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)]">
+      <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)]">
         <div className="text-red-600">
           <p className="font-medium">Failed to load storage stats</p>
           <p className="text-sm mt-1">{error}</p>
@@ -122,7 +122,7 @@ export function StorageStats() {
   if (!stats) return null;
 
   return (
-    <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)]">
+    <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)]">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-2 text-[var(--foreground)]">

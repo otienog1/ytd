@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { URLInput } from '@/components/URLInput';
 import { VideoPreview } from '@/components/VideoPreview';
@@ -12,6 +12,8 @@ import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { StorageAlert } from '@/components/StorageAlert';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { extractYouTubeCookies } from '@/utils/cookieExtractor';
+import { useAuth } from '@/contexts/AuthContext';
+import { LocalHistory } from '@/lib/localHistory';
 import api from '@/lib/api';
 import type { DownloadResponse } from '@/lib/types';
 
@@ -20,6 +22,7 @@ export default function Home() {
   const [isProcessingStarted, setIsProcessingStarted] = useState(false);
   const [submittedUrl, setSubmittedUrl] = useState<string>('');
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Use WebSocket for real-time updates instead of polling
   const { status, isConnected, error: wsError } = useWebSocket(jobId || '');
@@ -30,7 +33,11 @@ export default function Home() {
       const cookies = extractYouTubeCookies();
       console.log(`Initiating download with ${Object.keys(cookies).length} cookies`);
 
-      return api.initiateDownload({ url, cookies });
+      return api.initiateDownload({
+        url,
+        cookies,
+        user_id: user?.uid // Send Firebase user ID if authenticated
+      });
     },
     onSuccess: (data: DownloadResponse) => {
       setJobId(data.jobId);
@@ -57,6 +64,20 @@ export default function Home() {
     }
   }
 
+  // Save completed downloads to local history for anonymous users
+  useEffect(() => {
+    if (!user && status && status.status === 'completed' && jobId) {
+      LocalHistory.add({
+        jobId,
+        status: status.status,
+        progress: status.progress,
+        videoInfo: status.videoInfo,
+        downloadUrl: status.downloadUrl,
+        error: status.error,
+      });
+    }
+  }, [status, jobId, user]);
+
   const handleSubmit = (url: string) => {
     setJobId(null);
     setIsProcessingStarted(false);
@@ -82,21 +103,24 @@ export default function Home() {
     <main className="min-h-screen bg-[var(--background)]">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="space-y-8">
-          {/* Hero Section */}
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] tracking-tight">
-              YouTube Shorts Downloader - Download Shorts Videos Free
-            </h1>
-            <p className="text-base text-[var(--text-muted)] max-w-2xl mx-auto">
-              Free online YouTube Shorts downloader to save Shorts videos in MP4 format. Download YouTube Shorts in HD quality without watermark. Fast, secure, and works on all devices - no registration required.
-            </p>
-            {/* Connection Status - Only show when actively processing */}
-            {jobId && isProcessingStarted && (
-              <div className="flex justify-center pt-2">
-                <ConnectionStatus isConnected={isConnected} error={wsError} />
-              </div>
-            )}
-          </div>
+          {/* Hero Section - Only show to anonymous users */}
+          {!user && (
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] tracking-tight">
+                YouTube Shorts Downloader - Download Shorts Videos Free
+              </h1>
+              <p className="text-base text-[var(--text-muted)] max-w-2xl mx-auto">
+                Free online YouTube Shorts downloader to save Shorts videos in MP4 format. Download YouTube Shorts in HD quality without watermark. Fast, secure, and works on all devices - no registration required.
+              </p>
+            </div>
+          )}
+
+          {/* Connection Status - Only show when actively processing */}
+          {jobId && isProcessingStarted && (
+            <div className="flex justify-center pt-2">
+              <ConnectionStatus isConnected={isConnected} error={wsError} />
+            </div>
+          )}
 
           {/* Storage Alert */}
           <StorageAlert />
@@ -105,7 +129,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left & Center Columns - Input & How to Use (2/3 width) */}
             <div className="md:col-span-2 flex flex-col">
-              <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-8 flex-1">
+              <div className="bg-[var(--card-bg)] p-8 border border-[var(--card-border)] space-y-8 flex-1">
                 {/* YouTube Login Prompt */}
                 <YouTubeLoginPrompt />
 
@@ -150,7 +174,7 @@ export default function Home() {
             {/* Right Column - Video Preview, Download & Storage Stats (1/3 width) */}
             <div className="lg:col-span-1 flex flex-col gap-6">
               {isActivelyProcessing && !status?.videoInfo && (
-                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] flex-1">
+                <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)] flex-1">
                   <div className="space-y-4 animate-pulse">
                     <div className="border-2 border-[var(--card-border)] p-5 space-y-4 bg-[var(--background)]">
                       <div className="aspect-video relative overflow-hidden bg-[var(--skeleton-bg)]"></div>
@@ -167,7 +191,7 @@ export default function Home() {
                 </div>
               )}
               {status?.videoInfo && status.status !== 'failed' && (
-                <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] flex-1">
+                <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)] flex-1">
                   <VideoPreview
                     videoInfo={status.videoInfo}
                     downloadUrl={status.downloadUrl}
@@ -178,50 +202,52 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Features Section */}
-          <div className="bg-[var(--card-bg)] shadow-2xl p-8 border border-[var(--card-border)] space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)] text-center">
-              Why Choose Our YouTube Shorts Downloader?
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">100% Free & No Registration</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  Download YouTube Shorts videos completely free. No sign-up, no login, no subscription required. Just paste the URL and download.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">HD Quality Without Watermark</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  Save YouTube Shorts in original HD quality - 1080p, 720p, or 480p. No watermarks added to your downloaded videos.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">Fast & Secure Download</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  Our YouTube Shorts downloader processes videos quickly and securely. Your privacy is protected - we don't store your downloads.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">Works on All Devices</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  Download Shorts videos on any device - Windows, Mac, Android, iPhone, or tablet. Our tool is fully responsive and mobile-friendly.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">MP4 Format Compatible</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  All videos are downloaded in MP4 format, compatible with all media players and devices. Play your Shorts anywhere, anytime.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">No Software Installation</h3>
-                <p className="text-[var(--text-muted)] text-sm">
-                  Use our online YouTube Shorts downloader directly in your browser. No apps, extensions, or software downloads needed.
-                </p>
+          {/* Features Section - Only show to anonymous users */}
+          {!user && (
+            <div className="bg-[var(--card-bg)] p-8 border border-[var(--card-border)] space-y-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)] text-center">
+                Why Choose Our YouTube Shorts Downloader?
+              </h2>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">100% Free & No Registration</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    Download YouTube Shorts videos completely free. No sign-up, no login, no subscription required. Just paste the URL and download.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">HD Quality Without Watermark</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    Save YouTube Shorts in original HD quality - 1080p, 720p, or 480p. No watermarks added to your downloaded videos.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">Fast & Secure Download</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    Our YouTube Shorts downloader processes videos quickly and securely. Your privacy is protected - we don't store your downloads.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">Works on All Devices</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    Download Shorts videos on any device - Windows, Mac, Android, iPhone, or tablet. Our tool is fully responsive and mobile-friendly.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">MP4 Format Compatible</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    All videos are downloaded in MP4 format, compatible with all media players and devices. Play your Shorts anywhere, anytime.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">No Software Installation</h3>
+                  <p className="text-[var(--text-muted)] text-sm">
+                    Use our online YouTube Shorts downloader directly in your browser. No apps, extensions, or software downloads needed.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Ad Banner */}
           <div className="flex justify-center py-2">

@@ -39,7 +39,7 @@ export function HistoryFilters({
   };
 
   return (
-    <div className="bg-[var(--card-bg)] shadow-2xl p-6 border border-[var(--card-border)] space-y-4">
+    <div className="bg-[var(--card-bg)] p-6 border border-[var(--card-border)] space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search Input */}
         <div className="flex-1">

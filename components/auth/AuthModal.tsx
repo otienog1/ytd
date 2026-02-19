@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
 
@@ -23,6 +23,9 @@ export function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalP
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] bg-[var(--card-bg)] border-[var(--card-border)]">
+        <DialogTitle className="sr-only">
+          {view === 'login' ? 'Sign In' : 'Sign Up'}
+        </DialogTitle>
         {view === 'login' ? (
           <LoginForm
             onSwitchToSignup={() => setView('signup')}
