@@ -28,7 +28,7 @@ export function StorageIndicator({ compact = false }: StorageIndicatorProps) {
   const fetchStats = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/storage/stats`
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com'}/api/storage/stats`
       );
       const data = await response.json();
       setStats(data);
@@ -55,11 +55,11 @@ export function StorageIndicator({ compact = false }: StorageIndicatorProps) {
           className="flex items-center gap-2 text-sm hover:opacity-80 transition-opacity"
         >
           <span className="text-[var(--text-muted)]">Storage:</span>
-          <span className={`font-medium ${getStatusColor(stats.overall_used_percentage)}`}>
-            {stats.total_used_gb.toFixed(1)} GB / {(stats.total_used_gb + stats.total_available_gb).toFixed(1)} GB
+          <span className={`font-medium ${getStatusColor(stats.overall_used_percentage || 0)}`}>
+            {(stats.total_used_gb || 0).toFixed(1)} GB / {((stats.total_used_gb || 0) + (stats.total_available_gb || 0)).toFixed(1)} GB
           </span>
           <span className="text-[var(--text-muted)]">
-            ({stats.overall_used_percentage.toFixed(0)}%)
+            ({(stats.overall_used_percentage || 0).toFixed(0)}%)
           </span>
         </button>
 
@@ -80,13 +80,13 @@ export function StorageIndicator({ compact = false }: StorageIndicatorProps) {
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-[var(--foreground)]">Total Storage</span>
           <span className="text-sm text-[var(--text-muted)]">
-            {stats.total_used_gb.toFixed(2)} GB used
+            {(stats.total_used_gb || 0).toFixed(2)} GB used
           </span>
         </div>
         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all ${
-              stats.overall_used_percentage >= 90
+              (stats.overall_used_percentage || 0) >= 90
                 ? 'bg-red-500'
                 : stats.overall_used_percentage >= 70
                 ? 'bg-yellow-500'

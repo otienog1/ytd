@@ -37,7 +37,7 @@ export function StorageStats() {
   const fetchStats = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/storage/stats`
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com'}/api/storage/stats`
       );
 
       if (!response.ok) {
@@ -142,17 +142,17 @@ export function StorageStats() {
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-[var(--text-muted)]">Total Usage</span>
           <span className="text-sm font-medium text-[var(--foreground)]">
-            {stats.total_used_gb.toFixed(2)} GB / {(stats.total_used_gb + stats.total_available_gb).toFixed(2)} GB
+            {(stats.total_used_gb || 0).toFixed(2)} GB / {((stats.total_used_gb || 0) + (stats.total_available_gb || 0)).toFixed(2)} GB
           </span>
         </div>
         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${getProgressColor(stats.overall_used_percentage)}`}
-            style={{ width: `${stats.overall_used_percentage}%` }}
+            className={`h-full transition-all duration-300 ${getProgressColor(stats.overall_used_percentage || 0)}`}
+            style={{ width: `${stats.overall_used_percentage || 0}%` }}
           ></div>
         </div>
         <div className="mt-2 text-right text-xs text-[var(--text-muted)]">
-          {stats.overall_used_percentage.toFixed(1)}% used
+          {(stats.overall_used_percentage || 0).toFixed(1)}% used
         </div>
       </div>
 
@@ -180,10 +180,10 @@ export function StorageStats() {
               </div>
               <div className="text-right">
                 <div className="text-sm font-medium text-[var(--foreground)]">
-                  {provider.total_size_gb.toFixed(2)} GB
+                  {(provider.total_size_gb || 0).toFixed(2)} GB
                 </div>
                 <div className="text-xs text-[var(--text-muted)]">
-                  {provider.available_gb.toFixed(2)} GB available
+                  {(provider.available_gb || 0).toFixed(2)} GB available
                 </div>
               </div>
             </div>
@@ -191,15 +191,15 @@ export function StorageStats() {
             {/* Progress bar */}
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${getProgressColor(provider.used_percentage)}`}
-                style={{ width: `${provider.used_percentage}%` }}
+                className={`h-full transition-all duration-300 ${getProgressColor(provider.used_percentage || 0)}`}
+                style={{ width: `${provider.used_percentage || 0}%` }}
               ></div>
             </div>
 
             {/* Status */}
             <div className="mt-2 flex items-center justify-between text-xs">
               <span className="text-[var(--text-muted)]">
-                {provider.used_percentage.toFixed(1)}% used
+                {(provider.used_percentage || 0).toFixed(1)}% used
               </span>
               {provider.is_full && (
                 <span className="text-red-600 font-medium">

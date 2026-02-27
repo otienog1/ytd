@@ -16,7 +16,7 @@ export function StorageAlert() {
   const checkStorage = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/storage/stats`
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com'}/api/storage/stats`
       );
       const data = await response.json();
 

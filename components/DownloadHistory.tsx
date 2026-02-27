@@ -27,7 +27,7 @@ interface DownloadHistoryItem {
 }
 
 async function fetchDownloadHistory(userId: string): Promise<DownloadHistoryItem[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com';
   const response = await fetch(`${apiUrl}/api/download/history/${userId}?limit=50`);
 
   if (!response.ok) {
