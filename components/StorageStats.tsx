@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { HardDrive } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 interface StorageProvider {
   provider: string;
@@ -23,37 +25,42 @@ interface StorageStatsResponse {
 }
 
 export function StorageStats() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<StorageStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if user is admin
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin = user?.email === adminEmail;
+
   useEffect(() => {
-    fetchStats();
-    // Refresh every minute
-    const interval = setInterval(fetchStats, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    if (isAdmin) {
+      fetchStats();
+      // Refresh every minute
+      const interval = setInterval(fetchStats, 60000);
+      return () => clearInterval(interval);
+    } else {
+      setLoading(false);
+    }
+  }, [isAdmin]);
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com'}/api/storage/stats`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch storage stats');
-      }
-
-      const data = await response.json();
+      const data = await api.getStorageStats();
       setStats(data);
       setError(null);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || err.message || 'Failed to fetch storage stats');
     } finally {
       setLoading(false);
     }
   };
+
+  // Don't render if not admin
+  if (!isAdmin) {
+    return null;
+  }
 
   const getProviderIcon = (provider: string) => {
     switch (provider.toLowerCase()) {

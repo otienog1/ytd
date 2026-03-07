@@ -8,31 +8,12 @@ import { formatDistanceToNow } from 'date-fns';
 import { LocalHistory } from '@/lib/localHistory';
 import { Pagination } from './Pagination';
 import { api } from '@/lib/api';
-import type { HistoryResponse } from '@/lib/types';
-
-interface VideoInfo {
-  id: string;
-  title: string;
-  thumbnail: string;
-  duration: number;
-  fileSize?: string;
-  quality?: string;
-}
-
-interface DownloadHistoryItem {
-  jobId: string;
-  status: string;
-  progress: number;
-  videoInfo?: VideoInfo;
-  downloadUrl?: string;
-  error?: string;
-  createdAt?: string;
-}
+import type { HistoryResponse, DownloadStatus } from '@/lib/types';
 
 export function DownloadHistory() {
   const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [localHistory, setLocalHistory] = useState<DownloadHistoryItem[]>([]);
+  const [localHistory, setLocalHistory] = useState<DownloadStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingAgain, setDownloadingAgain] = useState<Set<string>>(new Set());
   const itemsPerPage = 10;
@@ -92,7 +73,7 @@ export function DownloadHistory() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDownloadAgain = async (item: DownloadHistoryItem) => {
+  const handleDownloadAgain = async (item: DownloadStatus) => {
     if (!item.videoInfo?.id) {
       alert('Video information not available');
       return;

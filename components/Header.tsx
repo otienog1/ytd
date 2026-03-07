@@ -5,10 +5,16 @@
 
 import Link from 'next/link';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Sun, Moon } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Sun, Moon, Shield } from 'lucide-react';
 
 export function Header() {
     const { theme, toggleTheme } = useTheme();
+    const { user } = useAuth();
+
+    // Check if user is admin
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    const isAdmin = user?.email === adminEmail;
 
     return (
         <header className="bg-[var(--card-bg)] border-b border-[var(--card-border)]">
@@ -18,6 +24,15 @@ export function Header() {
                         YTShorts<span className="text-[#E74C3C]">DL</span>
                     </Link>
                     <div className="flex gap-8 items-center">
+                        {isAdmin && (
+                            <Link
+                                href="/admin"
+                                className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium"
+                            >
+                                <Shield className="w-4 h-4" />
+                                Admin
+                            </Link>
+                        )}
                         <Link href="/faq" className="text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium">
                             FAQ
                         </Link>
