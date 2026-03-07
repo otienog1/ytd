@@ -32,11 +32,11 @@ export function DownloadHistory() {
   // Load local history for anonymous users
   useEffect(() => {
     if (!user) {
-      setLocalHistory(LocalHistory.getAll());
+      setLocalHistory(LocalHistory.getAll() as DownloadStatus[]);
 
       // Refresh local history every 5 seconds to clean expired items
       const interval = setInterval(() => {
-        setLocalHistory(LocalHistory.getAll());
+        setLocalHistory(LocalHistory.getAll() as DownloadStatus[]);
       }, 5000);
 
       return () => clearInterval(interval);
