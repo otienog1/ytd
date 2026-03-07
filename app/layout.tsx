@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Overpass_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
@@ -108,6 +109,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+        <Analytics />
         <StructuredData />
         <Providers>
           <Navbar />
