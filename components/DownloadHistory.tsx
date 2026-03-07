@@ -34,6 +34,7 @@ export function DownloadHistory() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [localHistory, setLocalHistory] = useState<DownloadHistoryItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [downloadingAgain, setDownloadingAgain] = useState<Set<string>>(new Set());
   const itemsPerPage = 10;
 
   // Fetch server history for authenticated users with pagination
@@ -89,6 +90,45 @@ export function DownloadHistory() {
     setCurrentPage(page);
     // Scroll to top of history section
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDownloadAgain = async (item: DownloadHistoryItem) => {
+    if (!item.videoInfo?.id) {
+      alert('Video information not available');
+      return;
+    }
+
+    // Add to downloading set
+    setDownloadingAgain(prev => new Set(prev).add(item.jobId));
+
+    try {
+      // Construct YouTube URL from video ID
+      const youtubeUrl = `https://www.youtube.com/watch?v=${item.videoInfo.id}`;
+
+      // Initiate new download using the API
+      const response = await api.initiateDownload({
+        url: youtubeUrl,
+        user_id: user?.uid,
+      });
+
+      // Show success message
+      alert(`Download re-initiated successfully! Job ID: ${response.jobId}`);
+
+      // Optionally refresh the history after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error re-initiating download:', error);
+      alert(`Failed to re-initiate download: ${error.message || 'Unknown error'}`);
+    } finally {
+      // Remove from downloading set
+      setDownloadingAgain(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(item.jobId);
+        return newSet;
+      });
+    }
   };
 
   // Show loading only for authenticated users fetching from server
@@ -188,8 +228,9 @@ export function DownloadHistory() {
                     )}
                   </div>
 
-                  {/* Download link */}
-                  {item.downloadUrl && (
+                  {/* Download actions */}
+                  {item.downloadUrl ? (
+                    // Active download link
                     <a
                       href={item.downloadUrl}
                       target="_blank"
@@ -198,9 +239,31 @@ export function DownloadHistory() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Download className="h-4 w-4" />
-                      Download Again
+                      Download
                       <ExternalLink className="h-3 w-3" />
                     </a>
+                  ) : item.status === 'completed' && user && (
+                    // Expired download - show "Download Again" button
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadAgain(item);
+                      }}
+                      disabled={downloadingAgain.has(item.jobId)}
+                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-[#E74C3C] hover:bg-[#c0392b] text-white font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
+                    >
+                      {downloadingAgain.has(item.jobId) ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Requesting...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4" />
+                          Download Again
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
