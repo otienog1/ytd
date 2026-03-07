@@ -6,6 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Download, Clock, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { LocalHistory } from '@/lib/localHistory';
+import { Pagination } from './Pagination';
+import { api } from '@/lib/api';
+import type { HistoryResponse } from '@/lib/types';
 
 interface VideoInfo {
   id: string;
@@ -26,26 +29,20 @@ interface DownloadHistoryItem {
   createdAt?: string;
 }
 
-async function fetchDownloadHistory(userId: string): Promise<DownloadHistoryItem[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ytd.timobosafaris.com';
-  const response = await fetch(`${apiUrl}/api/download/history/${userId}?limit=50`);
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch download history');
-  }
-
-  return response.json();
-}
-
 export function DownloadHistory() {
   const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [localHistory, setLocalHistory] = useState<DownloadHistoryItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Fetch server history for authenticated users
-  const { data: serverHistory, isLoading, error } = useQuery({
-    queryKey: ['downloadHistory', user?.uid],
-    queryFn: () => fetchDownloadHistory(user!.uid),
+  // Fetch server history for authenticated users with pagination
+  const { data: historyResponse, isLoading, error } = useQuery<HistoryResponse>({
+    queryKey: ['downloadHistory', user?.uid, currentPage],
+    queryFn: () => api.getDownloadHistory({
+      page: currentPage,
+      limit: itemsPerPage,
+    }),
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -64,8 +61,17 @@ export function DownloadHistory() {
     }
   }, [user]);
 
+  // Reset to page 1 when user changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [user?.uid]);
+
   // Use server history for authenticated users, local history for anonymous
-  const history = user ? serverHistory : localHistory;
+  const history = user ? historyResponse?.items : localHistory;
+  const totalPages = historyResponse?.totalPages || 1;
+  const hasNext = historyResponse?.hasNext || false;
+  const hasPrevious = historyResponse?.hasPrevious || false;
+  const totalCount = historyResponse?.total || localHistory.length;
 
   const toggleExpand = (jobId: string) => {
     setExpandedItems((prev) => {
@@ -77,6 +83,12 @@ export function DownloadHistory() {
       }
       return newSet;
     });
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of history section
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Show loading only for authenticated users fetching from server
@@ -123,8 +135,13 @@ export function DownloadHistory() {
       <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">
         Download History
         <span className="text-sm font-normal text-[var(--text-muted)] ml-3">
-          ({history.length} download{history.length !== 1 ? 's' : ''})
+          ({totalCount} download{totalCount !== 1 ? 's' : ''})
         </span>
+        {user && totalPages > 1 && (
+          <span className="text-sm font-normal text-[var(--text-muted)] ml-2">
+            - Page {currentPage} of {totalPages}
+          </span>
+        )}
       </h2>
 
       <div className="space-y-4">
@@ -207,14 +224,40 @@ export function DownloadHistory() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[var(--text-muted)]">Status:</span>
-                    <span className="text-green-500 font-medium">{item.status}</span>
+                    <span className={`font-medium ${
+                      item.status === 'completed' ? 'text-green-500' :
+                      item.status === 'failed' ? 'text-red-500' :
+                      item.status === 'processing' ? 'text-yellow-500' :
+                      'text-blue-500'
+                    }`}>
+                      {item.status}
+                    </span>
                   </div>
+                  {item.createdAt && (
+                    <div className="flex justify-between">
+                      <span className="text-[var(--text-muted)]">Created:</span>
+                      <span className="text-[var(--foreground)]">
+                        {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {/* Pagination - only for authenticated users with multiple pages */}
+      {user && totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          hasNext={hasNext}
+          hasPrevious={hasPrevious}
+        />
+      )}
     </div>
   );
 }
