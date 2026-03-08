@@ -10,11 +10,11 @@ import { Sun, Moon, Shield, HardDrive } from 'lucide-react';
 
 export function Header() {
     const { theme, toggleTheme } = useTheme();
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
 
-    // Check if user is admin
+    // Check if user is admin (only after loading completes)
     const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-    const isAdmin = user?.email === adminEmail;
+    const isAdmin = !loading && user?.email === adminEmail;
 
     return (
         <header className="bg-[var(--card-bg)] border-b border-[var(--card-border)]">
