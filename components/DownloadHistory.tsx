@@ -16,6 +16,7 @@ export function DownloadHistory() {
   const [localHistory, setLocalHistory] = useState<DownloadStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingAgain, setDownloadingAgain] = useState<Set<string>>(new Set());
+  const [redownloadUrls, setRedownloadUrls] = useState<Map<string, string>>(new Map()); // Map old jobId to new download URL
   const itemsPerPage = 10;
 
   // Fetch server history for authenticated users with pagination
@@ -107,21 +108,15 @@ export function DownloadHistory() {
             // Clear polling interval
             clearInterval(pollInterval);
 
+            // Store the download URL mapped to the original jobId
+            setRedownloadUrls(prev => new Map(prev).set(item.jobId, status.downloadUrl));
+
             // Remove from downloading set
             setDownloadingAgain(prev => {
               const newSet = new Set(prev);
               newSet.delete(item.jobId);
               return newSet;
             });
-
-            // Update the item in the history list with new download URL
-            if (user) {
-              // Refresh server history
-              refetchHistory();
-            } else {
-              // Update local history
-              setLocalHistory(LocalHistory.getAll() as DownloadStatus[]);
-            }
 
             // Show browser notification if permission granted
             if (Notification.permission === 'granted') {
@@ -265,10 +260,10 @@ export function DownloadHistory() {
                   </div>
 
                   {/* Download actions */}
-                  {item.downloadUrl ? (
-                    // Active download link
+                  {item.downloadUrl || redownloadUrls.has(item.jobId) ? (
+                    // Active download link (either original or redownloaded)
                     <a
-                      href={item.downloadUrl}
+                      href={redownloadUrls.get(item.jobId) || item.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] hover:text-[#c0392b] font-medium text-sm transition-colors"
@@ -279,27 +274,24 @@ export function DownloadHistory() {
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   ) : item.status === 'completed' && user && (
-                    // Expired download - show "Download" link
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownloadAgain(item);
-                      }}
-                      disabled={downloadingAgain.has(item.jobId)}
-                      className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] hover:underline font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {downloadingAgain.has(item.jobId) ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E74C3C]"></div>
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4" />
-                          Download
-                        </>
-                      )}
-                    </button>
+                    // Expired download - show "Download" button or processing state
+                    downloadingAgain.has(item.jobId) ? (
+                      <div className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] font-medium text-sm">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E74C3C]"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadAgain(item);
+                        }}
+                        className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] hover:underline font-medium text-sm transition-colors"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </button>
+                    )
                   )}
                 </div>
               </div>
