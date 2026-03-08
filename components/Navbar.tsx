@@ -18,6 +18,10 @@ export function Navbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
 
+  // Check if user is admin
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin = !loading && user?.email === adminEmail;
+
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -53,28 +57,28 @@ export function Navbar() {
             {/* Center Navigation Links */}
             <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
               {user && (
-                <>
-                  <Link
-                    href="/history"
-                    className={`text-sm font-medium transition-colors hover:text-[#E74C3C] ${
-                      isActive('/history')
-                        ? 'text-[#E74C3C]'
-                        : 'text-[var(--text-muted)]'
-                    }`}
-                  >
-                    History
-                  </Link>
-                  <Link
-                    href="/stats"
-                    className={`text-sm font-medium transition-colors hover:text-[#E74C3C] ${
-                      isActive('/stats')
-                        ? 'text-[#E74C3C]'
-                        : 'text-[var(--text-muted)]'
-                    }`}
-                  >
-                    Storage Stats
-                  </Link>
-                </>
+                <Link
+                  href="/history"
+                  className={`text-sm font-medium transition-colors hover:text-[#E74C3C] ${
+                    isActive('/history')
+                      ? 'text-[#E74C3C]'
+                      : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  History
+                </Link>
+              )}
+              {isAdmin && (
+                <Link
+                  href="/stats"
+                  className={`text-sm font-medium transition-colors hover:text-[#E74C3C] ${
+                    isActive('/stats')
+                      ? 'text-[#E74C3C]'
+                      : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  Storage Stats
+                </Link>
               )}
             </div>
 
