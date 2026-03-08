@@ -274,7 +274,7 @@ export function DownloadHistory() {
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   ) : item.status === 'completed' && user && (
-                    // Expired download - show "Download" button or processing state
+                    // Expired download - show "Download Again" button or processing state
                     downloadingAgain.has(item.jobId) ? (
                       <div className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] font-medium text-sm">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E74C3C]"></div>
@@ -289,7 +289,7 @@ export function DownloadHistory() {
                         className="inline-flex items-center gap-2 mt-3 text-[#E74C3C] hover:underline font-medium text-sm transition-colors"
                       >
                         <Download className="h-4 w-4" />
-                        Download
+                        Download Again
                       </button>
                     )
                   )}
