@@ -19,7 +19,7 @@ export function DownloadHistory() {
   const itemsPerPage = 10;
 
   // Fetch server history for authenticated users with pagination
-  const { data: historyResponse, isLoading, error } = useQuery<HistoryResponse>({
+  const { data: historyResponse, isLoading, error, refetch: refetchHistory } = useQuery<HistoryResponse>({
     queryKey: ['downloadHistory', user?.uid, currentPage],
     queryFn: () => api.getDownloadHistory({
       page: currentPage,
@@ -48,6 +48,13 @@ export function DownloadHistory() {
     setCurrentPage(1);
   }, [user?.uid]);
 
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // Use server history for authenticated users, local history for anonymous
   const history = user ? historyResponse?.items : localHistory;
   const totalPages = historyResponse?.totalPages || 1;
@@ -75,7 +82,6 @@ export function DownloadHistory() {
 
   const handleDownloadAgain = async (item: DownloadStatus) => {
     if (!item.videoInfo?.id) {
-      alert('Video information not available');
       return;
     }
 
@@ -92,18 +98,67 @@ export function DownloadHistory() {
         user_id: user?.uid,
       });
 
-      // Show success message
-      alert(`Download re-initiated successfully! Job ID: ${response.jobId}`);
+      // Poll for download status in the background
+      const pollInterval = setInterval(async () => {
+        try {
+          const status = await api.getDownloadStatus(response.jobId);
 
-      // Optionally refresh the history after a short delay
+          if (status.status === 'completed' && status.downloadUrl) {
+            // Clear polling interval
+            clearInterval(pollInterval);
+
+            // Remove from downloading set
+            setDownloadingAgain(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(item.jobId);
+              return newSet;
+            });
+
+            // Update the item in the history list with new download URL
+            if (user) {
+              // Refresh server history
+              refetchHistory();
+            } else {
+              // Update local history
+              setLocalHistory(LocalHistory.getAll() as DownloadStatus[]);
+            }
+
+            // Show browser notification if permission granted
+            if (Notification.permission === 'granted') {
+              new Notification('Download Ready!', {
+                body: `${item.videoInfo?.title || 'Video'} is ready to download`,
+                icon: '/favicon.ico'
+              });
+            }
+          } else if (status.status === 'failed') {
+            // Clear polling interval
+            clearInterval(pollInterval);
+
+            // Remove from downloading set
+            setDownloadingAgain(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(item.jobId);
+              return newSet;
+            });
+          }
+        } catch (error) {
+          console.error('Error polling download status:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+
+      // Clear interval after 5 minutes to prevent infinite polling
       setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+        clearInterval(pollInterval);
+        setDownloadingAgain(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(item.jobId);
+          return newSet;
+        });
+      }, 300000);
+
     } catch (error: any) {
       console.error('Error re-initiating download:', error);
-      alert(`Failed to re-initiate download: ${error.message || 'Unknown error'}`);
-    } finally {
-      // Remove from downloading set
+      // Remove from downloading set on error
       setDownloadingAgain(prev => {
         const newSet = new Set(prev);
         newSet.delete(item.jobId);
@@ -224,7 +279,7 @@ export function DownloadHistory() {
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   ) : item.status === 'completed' && user && (
-                    // Expired download - show "Download Again" link
+                    // Expired download - show "Download" link
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -236,12 +291,12 @@ export function DownloadHistory() {
                       {downloadingAgain.has(item.jobId) ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E74C3C]"></div>
-                          Requesting...
+                          Processing...
                         </>
                       ) : (
                         <>
                           <Download className="h-4 w-4" />
-                          Download Again
+                          Download
                         </>
                       )}
                     </button>
