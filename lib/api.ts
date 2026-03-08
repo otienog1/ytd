@@ -34,7 +34,7 @@ apiClient.interceptors.request.use(async (config) => {
 export const api = {
   async initiateDownload(data: DownloadRequest): Promise<DownloadResponse> {
     const response = await apiClient.post<DownloadResponse>(
-      "/api/download",
+      "/api/download/",
       data,
     );
     return response.data;
