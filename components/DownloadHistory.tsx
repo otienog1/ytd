@@ -109,7 +109,8 @@ export function DownloadHistory() {
             clearInterval(pollInterval);
 
             // Store the download URL mapped to the original jobId
-            setRedownloadUrls(prev => new Map(prev).set(item.jobId, status.downloadUrl));
+            const downloadUrl = status.downloadUrl;
+            setRedownloadUrls(prev => new Map(prev).set(item.jobId, downloadUrl));
 
             // Remove from downloading set
             setDownloadingAgain(prev => {
