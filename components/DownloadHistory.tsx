@@ -83,8 +83,8 @@ export function DownloadHistory() {
     setDownloadingAgain(prev => new Set(prev).add(item.jobId));
 
     try {
-      // Construct YouTube URL from video ID
-      const youtubeUrl = `https://www.youtube.com/watch?v=${item.videoInfo.id}`;
+      // Construct YouTube Shorts URL from video ID
+      const youtubeUrl = `https://www.youtube.com/shorts/${item.videoInfo.id}`;
 
       // Initiate new download using the API
       const response = await api.initiateDownload({
