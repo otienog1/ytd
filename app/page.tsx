@@ -107,10 +107,10 @@ export default function Home() {
           {!user && (
             <div className="text-center space-y-4">
               <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] tracking-tight">
-                YouTube Shorts Downloader - Download Shorts Videos Free
+                Video Downloader - YouTube Shorts, TikTok & Instagram
               </h1>
               <p className="text-base text-[var(--text-muted)] max-w-2xl mx-auto">
-                Free online YouTube Shorts downloader to save Shorts videos in MP4 format. Download YouTube Shorts in HD quality without watermark. Fast, secure, and works on all devices - no registration required.
+                Free online video downloader to save YouTube Shorts, TikTok videos, and Instagram Reels in MP4 format. Download in HD quality without watermark. Fast, secure, and works on all devices - no registration required.
               </p>
             </div>
           )}
@@ -145,7 +145,7 @@ export default function Home() {
                       </div>
                       <h3 className="text-lg font-semibold text-[var(--foreground)]">Copy URL</h3>
                       <p className="text-[var(--text-muted)] text-sm">
-                        Copy the YouTube Shorts video URL from your browser
+                        Copy the video URL from YouTube Shorts, TikTok, or Instagram
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -206,43 +206,43 @@ export default function Home() {
           {!user && (
             <div className="bg-[var(--card-bg)] p-8 border border-[var(--card-border)] space-y-6">
               <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)] text-center">
-                Why Choose Our YouTube Shorts Downloader?
+                Why Choose Our Video Downloader?
               </h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-[var(--foreground)]">100% Free & No Registration</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    Download YouTube Shorts videos completely free. No sign-up, no login, no subscription required. Just paste the URL and download.
+                    Download videos from YouTube Shorts, TikTok, and Instagram completely free. No sign-up, no login, no subscription required.
                   </p>
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-[var(--foreground)]">HD Quality Without Watermark</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    Save YouTube Shorts in original HD quality - 1080p, 720p, or 480p. No watermarks added to your downloaded videos.
+                    Save videos in original HD quality - 1080p, 720p, or 480p. No watermarks added to your downloaded videos.
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-[var(--foreground)]">Fast & Secure Download</h3>
+                  <h3 className="text-lg font-semibold text-[var(--foreground)]">Multiple Platforms Supported</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    Our YouTube Shorts downloader processes videos quickly and securely. Your privacy is protected - we don't store your downloads.
+                    Download from YouTube Shorts, TikTok videos, Instagram Reels, Posts, and Stories - all in one place.
                   </p>
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-[var(--foreground)]">Works on All Devices</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    Download Shorts videos on any device - Windows, Mac, Android, iPhone, or tablet. Our tool is fully responsive and mobile-friendly.
+                    Download videos on any device - Windows, Mac, Android, iPhone, or tablet. Our tool is fully responsive and mobile-friendly.
                   </p>
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-[var(--foreground)]">MP4 Format Compatible</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    All videos are downloaded in MP4 format, compatible with all media players and devices. Play your Shorts anywhere, anytime.
+                    All videos are downloaded in MP4 format, compatible with all media players and devices. Play your videos anywhere, anytime.
                   </p>
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-[var(--foreground)]">No Software Installation</h3>
                   <p className="text-[var(--text-muted)] text-sm">
-                    Use our online YouTube Shorts downloader directly in your browser. No apps, extensions, or software downloads needed.
+                    Use our online video downloader directly in your browser. No apps, extensions, or software downloads needed.
                   </p>
                 </div>
               </div>

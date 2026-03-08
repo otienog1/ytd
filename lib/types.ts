@@ -7,9 +7,11 @@ export interface VideoInfo {
   quality?: string;
 }
 
+export type Platform = 'youtube' | 'tiktok' | 'instagram';
+
 export interface DownloadRequest {
   url: string;
-  cookies?: { [key: string]: string };  // Optional YouTube cookies from browser
+  cookies?: { [key: string]: string };  // Optional cookies for authenticated content
   user_id?: string;  // Optional Firebase user ID for authenticated users
 }
 
@@ -31,6 +33,7 @@ export interface DownloadStatus {
   createdAt?: string;
   storageProvider?: 'gcs' | 'azure' | 's3';
   fileSize?: number;
+  platform?: Platform;
 }
 
 export interface HistoryResponse {
@@ -48,4 +51,5 @@ export interface HistoryFilters {
   limit?: number;
   status?: 'queued' | 'processing' | 'completed' | 'failed' | '';
   search?: string;
+  platform?: Platform | '';
 }

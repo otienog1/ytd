@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { urlSchema, type UrlFormData } from '@/lib/validation';
+import { urlSchema, type UrlFormData, detectPlatform, getPlatformDisplayName, type Platform } from '@/lib/validation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,11 @@ export function URLInput({ onSubmit, isLoading, status, onUrlChange }: URLInputP
 
   const urlValue = watch('url');
 
+  // Detect platform from current URL
+  const detectedPlatform = useMemo(() => {
+    return urlValue ? detectPlatform(urlValue) : 'unknown';
+  }, [urlValue]);
+
   useEffect(() => {
     if (urlValue && onUrlChange) {
       onUrlChange(urlValue);
@@ -51,15 +56,35 @@ export function URLInput({ onSubmit, isLoading, status, onUrlChange }: URLInputP
   const isCompleted = status?.status === 'completed';
   const progress = getProgressValue();
 
+  // Get platform indicator styling
+  const getPlatformIndicator = () => {
+    if (detectedPlatform === 'unknown' || !urlValue) return null;
+
+    const platformColors: Record<Exclude<Platform, 'unknown'>, string> = {
+      youtube: 'bg-red-600',
+      tiktok: 'bg-black',
+      instagram: 'bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500',
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${platformColors[detectedPlatform]}`}>
+        {getPlatformDisplayName(detectedPlatform)}
+      </span>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="space-y-3">
-        <Label htmlFor="url" className="text-base font-semibold text-[var(--foreground)]">YouTube Shorts URL</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="url" className="text-base font-semibold text-[var(--foreground)]">Video URL</Label>
+          {getPlatformIndicator()}
+        </div>
         <div className="flex gap-3">
           <Input
             id="url"
             type="text"
-            placeholder="Paste your YouTube Shorts URL here..."
+            placeholder="Paste YouTube Shorts, TikTok, or Instagram URL..."
             {...register('url')}
             disabled={isLoading || isProcessing}
             className={errors.url ? 'border-red-500 focus-visible:ring-red-500' : ''}
