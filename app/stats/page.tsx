@@ -1,17 +1,59 @@
 'use client';
 
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import { StorageStats } from '@/components/StorageStats';
 import { StorageAlert } from '@/components/StorageAlert';
 
 export default function StatsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // Check if user is admin
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin = user?.email === adminEmail;
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.push('/');
+    }
+  }, [authLoading, isAdmin, router]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E74C3C]"></div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not admin
+  if (!isAdmin) {
+    return null;
+  }
+
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-[var(--background)]">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="space-y-8">
-            {/* Storage Alert */}
-            <StorageAlert />
+    <div className="min-h-screen bg-[var(--background)]">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-[var(--foreground)]">
+              Storage Statistics
+            </h1>
+            <button
+              onClick={() => router.push('/')}
+              className="px-4 py-2 bg-[var(--card-bg)] border border-[var(--card-border)] rounded hover:bg-[var(--card-border)] transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
+
+          {/* Storage Alert */}
+          <StorageAlert />
 
             {/* Storage Stats Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -93,6 +135,6 @@ export default function StatsPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }

@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sun, Moon, Shield } from 'lucide-react';
+import { Sun, Moon, Shield, HardDrive } from 'lucide-react';
 
 export function Header() {
     const { theme, toggleTheme } = useTheme();
@@ -25,13 +25,22 @@ export function Header() {
                     </Link>
                     <div className="flex gap-8 items-center">
                         {isAdmin && (
-                            <Link
-                                href="/admin"
-                                className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium"
-                            >
-                                <Shield className="w-4 h-4" />
-                                Admin
-                            </Link>
+                            <>
+                                <Link
+                                    href="/admin"
+                                    className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium"
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Admin
+                                </Link>
+                                <Link
+                                    href="/stats"
+                                    className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium"
+                                >
+                                    <HardDrive className="w-4 h-4" />
+                                    Storage
+                                </Link>
+                            </>
                         )}
                         <Link href="/faq" className="text-sm text-[var(--text-muted)] hover:text-[#E74C3C] transition-colors font-medium">
                             FAQ

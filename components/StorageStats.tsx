@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { HardDrive } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 
 interface StorageProvider {
@@ -25,25 +24,16 @@ interface StorageStatsResponse {
 }
 
 export function StorageStats() {
-  const { user } = useAuth();
   const [stats, setStats] = useState<StorageStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is admin
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  const isAdmin = user?.email === adminEmail;
-
   useEffect(() => {
-    if (isAdmin) {
-      fetchStats();
-      // Refresh every minute
-      const interval = setInterval(fetchStats, 60000);
-      return () => clearInterval(interval);
-    } else {
-      setLoading(false);
-    }
-  }, [isAdmin]);
+    fetchStats();
+    // Refresh every minute
+    const interval = setInterval(fetchStats, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -56,11 +46,6 @@ export function StorageStats() {
       setLoading(false);
     }
   };
-
-  // Don't render if not admin
-  if (!isAdmin) {
-    return null;
-  }
 
   const getProviderIcon = (provider: string) => {
     switch (provider.toLowerCase()) {
